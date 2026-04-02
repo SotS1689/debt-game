@@ -5,16 +5,7 @@ import pandas as pd
 #  CONFIGURATION  ← Only thing you need to edit
 # ─────────────────────────────────────────────
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1DWdt6dWEm1l4Yv-smXwoJv6IR-0f-6SEHKBk7DRnZv4/edit?usp=sharing"
-
-# IMPORTANT: After deleting the "Visualizer" sheet, your "Events" sheet is now the only one.
-# Google Sheets uses a numeric "gid" to identify each tab. 
-# Since you deleted the extra sheet, gid=0 should now point to "Events".
-# If you ever add more tabs again, do this to find the correct gid:
-#   1. Open your Google Sheet in a browser
-#   2. Click the "Events" tab
-#   3. Look at the URL in the address bar — it will end with #gid=XXXXXXXXX
-#   4. Copy that number and paste it below
-SHEET_GID = 0
+SHEET_GID = 0  # gid=0 is now your only "Events" sheet
 
 US_DEBT = 39_000_000_000_000  # Update this number whenever you like
 
@@ -151,26 +142,20 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; color: #F0EDE6;
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  DATA LOADING – Now forces the exact "Events" sheet using gid
+#  DATA LOADING – Tailored exactly to your column names
 # ─────────────────────────────────────────────
 @st.cache_data(ttl=300)
 def load_data(url: str, gid: int) -> pd.DataFrame:
-    """Clean URL and force export from the specific sheet gid (Events)."""
-    # Remove any query parameters and /edit or /pub suffix
     if "/edit" in url:
         base = url.split("/edit")[0]
-    elif "/pub" in url:
-        base = url.split("/pub")[0]
     else:
         base = url.split("?")[0]
-    
-    # This is the fix: explicitly use &gid= so it always reads the Events tab
     csv_url = f"{base}/export?format=csv&gid={gid}"
 
     df = pd.read_csv(csv_url)
     df.columns = [col.strip() for col in df.columns]
 
-    # Exact mapping for your sheet's real column names
+    # Exact mapping for your headers: Event, Date, Years Past, Dollars per Day, Total, US Federal Debt
     rename_map = {}
     for col in df.columns:
         low = col.lower()
@@ -178,17 +163,16 @@ def load_data(url: str, gid: int) -> pd.DataFrame:
             rename_map[col] = "Event"
         elif "date" in low:
             rename_map[col] = "Date"
-        elif "years past" in low or "years ago" in low or "year" in low:
+        elif "years past" in low or "years" in low:
             rename_map[col] = "Years Ago"
-        elif "dollars per day" in low or "daily" in low or "cost" in low or "spend" in low:
+        elif "dollars per day" in low or "daily" in low:
             rename_map[col] = "Daily Cost"
         elif "total" in low:
             rename_map[col] = "Total"
-        elif "debt" in low or "federal" in low:
+        elif "us federal debt" in low or "debt" in low:
             rename_map[col] = "US Debt"
     df.rename(columns=rename_map, inplace=True)
 
-    # Convert to numeric
     for col in ["Years Ago", "Daily Cost", "Total", "US Debt"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -236,7 +220,7 @@ st.markdown(f"""
 try:
     df = load_data(SHEET_URL, SHEET_GID)
 except Exception as e:
-    st.error(f"⚠️ Couldn't load Google Sheet.\n\nError: {e}\n\nDouble-check that SHEET_GID matches the 'Events' tab.")
+    st.error(f"⚠️ Couldn't load Google Sheet.\n\nError: {e}")
     st.stop()
 
 if df.empty:
@@ -244,49 +228,52 @@ if df.empty:
     st.stop()
 
 # ─────────────────────────────────────────────
-#  FORM
+#  LIVE EVENT SELECTOR (outside form so it updates instantly)
 # ─────────────────────────────────────────────
-with st.form("debt_form", clear_on_submit=False):
-    st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
+st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
 
-    event_options = df["Event"].tolist()
-    selected_event = st.selectbox(
-        "CHOOSE A HISTORICAL EVENT",
-        options=event_options,
-        index=0,
-        key="event_select"
-    )
+event_options = df["Event"].tolist()
+selected_event = st.selectbox(
+    "CHOOSE A HISTORICAL EVENT",
+    options=event_options,
+    index=0,
+    key="event_select"
+)
 
-    row = df[df["Event"] == selected_event].iloc[0]
-    years_ago = int(row.get("Years Ago", 0)) if pd.notna(row.get("Years Ago")) else 0
-    date_val = int(row.get("Date", 0)) if pd.notna(row.get("Date")) else "Unknown"
-    actual_daily = float(row.get("Daily Cost", 0)) if pd.notna(row.get("Daily Cost")) else 0
+# Extract row data live
+row = df[df["Event"] == selected_event].iloc[0]
+years_ago = int(row.get("Years Ago", 0)) if pd.notna(row.get("Years Ago")) else 0
+date_val = int(row.get("Date", 0)) if pd.notna(row.get("Date")) else "Unknown"
+actual_daily = float(row.get("Daily Cost", 0)) if pd.notna(row.get("Daily Cost")) else 0
 
-    st.markdown(f"""
-    <div class="event-card">
-        <div class="event-label">Selected Event</div>
-        <div class="event-name">{selected_event}</div>
-        <div class="event-meta">
-            <div class="meta-chip">📅 Year <strong>{date_val}</strong></div>
-            <div class="meta-chip">⏳ <strong>{years_ago:,}</strong> years ago</div>
-            <div class="meta-chip">📐 <strong>{years_ago * 365:,}</strong> days of spending</div>
-        </div>
+st.markdown(f"""
+<div class="event-card">
+    <div class="event-label">Selected Event</div>
+    <div class="event-name">{selected_event}</div>
+    <div class="event-meta">
+        <div class="meta-chip">📅 Year <strong>{date_val}</strong></div>
+        <div class="meta-chip">⏳ <strong>{years_ago:,}</strong> years ago</div>
+        <div class="meta-chip">📐 <strong>{years_ago * 365:,}</strong> days of spending</div>
     </div>
-    """, unsafe_allow_html=True)
+</div>
+""", unsafe_allow_html=True)
 
-    st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
+st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
 
-    guess = st.number_input(
-        "YOUR GUESS — DAILY DOLLARS NEEDED TO EQUAL DEBT ($)",
-        min_value=0,
-        value=0,
-        step=1_000_000,
-        format="%d",
-        key="guess_input",
-        help="Enter what you think the daily amount would need to be since that event to equal today's debt"
-    )
+guess = st.number_input(
+    "YOUR GUESS — DAILY DOLLARS NEEDED TO EQUAL DEBT ($)",
+    min_value=0,
+    value=0,
+    step=1_000_000,
+    format="%d",
+    key="guess_input",
+    help="Enter what you think the daily amount would need to be since that event to equal today's debt"
+)
 
-    calculate = st.form_submit_button("REVEAL THE TRUTH 🔍", type="primary")
+# ─────────────────────────────────────────────
+#  SUBMIT BUTTON (only this is in the form)
+# ─────────────────────────────────────────────
+calculate = st.button("REVEAL THE TRUTH 🔍", type="primary", key="calc_btn")
 
 # ─────────────────────────────────────────────
 #  RESULTS
