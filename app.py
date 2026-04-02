@@ -44,7 +44,7 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; color: #F0EDE6;
 .hero-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.25em; color: #DC2626; text-transform: uppercase; margin-bottom: 0.75rem; }
 .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 10vw, 5.5rem); line-height: 0.95; color: #F0EDE6; letter-spacing: 0.02em; margin: 0 0 0.5rem; }
 .hero-title span { color: #DC2626; }
-.hero-subtitle { font-size: 1rem; color: #8A8580; font-weight: 300; max-width: 480px; margin: 0 auto; line-height: 1.6; }
+.hero-subtitle { font-size: 1rem; color: #8A8580; font-weight: 300; max-width: 480px; margin: 0 auto; line-height: 1.6; text-align: center;}
 
 .debt-ticker {
     background: linear-gradient(135deg, #1A0A0A 0%, #150505 100%);
