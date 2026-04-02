@@ -209,8 +209,9 @@ st.markdown("""
 <div class="hero">
     <div class="hero-eyebrow">Interactive Challenge</div>
     <div class="hero-title">US DEBT<br><span>THROUGH TIME</span></div>
-    <p class="hero-subtitle">
-        Pick a moment in history. Guess how many dollars per day would be needed since that date to equal today's national debt. See how your total stacks up.
+    <p class="hero-subtitle" style="text-align: center; margin: 20px auto 0; max-width: 480px; display: block;">
+        Pick a moment in history. Guess how many dollars per day would be needed<br>
+        since that date to equal today's national debt. See how your total stacks up.
     </p>
 </div>
 """, unsafe_allow_html=True)
