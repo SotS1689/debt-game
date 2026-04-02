@@ -19,16 +19,13 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-#  GLOBAL STYLES (unchanged – matches your dark theme)
+#  GLOBAL STYLES (exact same dark theme as before)
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
-html, body, [class*="css"] {
-    font-family: 'DM Sans', sans-serif;
-    color: #F0EDE6;
-}
+html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; color: #F0EDE6; }
 .stApp {
     background: #0A0A0F;
     background-image:
@@ -36,11 +33,9 @@ html, body, [class*="css"] {
         repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.015) 60px, rgba(255,255,255,0.015) 61px),
         repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.015) 60px, rgba(255,255,255,0.015) 61px);
 }
-
 #MainMenu, footer, header {visibility: hidden;}
 .block-container {padding-top: 2rem; padding-bottom: 4rem; max-width: 760px;}
 
-/* Hero, Ticker, Event Card, Inputs, Button – all kept exactly as before */
 .hero { text-align: center; padding: 2.5rem 1rem 1.5rem; margin-bottom: 0.5rem; }
 .hero-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.25em; color: #DC2626; text-transform: uppercase; margin-bottom: 0.75rem; }
 .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 10vw, 5.5rem); line-height: 0.95; color: #F0EDE6; letter-spacing: 0.02em; margin: 0 0 0.5rem; }
@@ -96,10 +91,7 @@ html, body, [class*="css"] {
     color: #F0EDE6 !important;
     font-family: 'DM Mono', monospace !important;
 }
-.stNumberInput > div > div > input {
-    font-size: 1.1rem !important;
-    padding: 0.6rem 1rem !important;
-}
+.stNumberInput > div > div > input { font-size: 1.1rem !important; padding: 0.6rem 1rem !important; }
 
 .stButton > button {
     background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%) !important;
@@ -123,44 +115,16 @@ html, body, [class*="css"] {
     padding: 1.75rem;
     margin-top: 1.5rem;
 }
-.result-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.4rem;
-    color: #8A8580;
-    letter-spacing: 0.1em;
-    margin-bottom: 1.25rem;
-    text-transform: uppercase;
-}
-
+.result-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: #8A8580; letter-spacing: 0.1em; margin-bottom: 1.25rem; text-transform: uppercase; }
 .bar-row { margin-bottom: 1.1rem; }
 .bar-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.35rem; }
 .bar-name { font-size: 0.8rem; font-family: 'DM Mono', monospace; color: #8A8580; letter-spacing: 0.05em; }
 .bar-amount { font-size: 0.85rem; font-family: 'DM Mono', monospace; font-weight: 500; }
-.bar-track {
-    background: rgba(240,237,230,0.05);
-    border-radius: 4px;
-    height: 28px;
-    overflow: hidden;
-    position: relative;
-}
-.bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
-    display: flex;
-    align-items: center;
-    padding-left: 10px;
-    min-width: 4px;
-}
+.bar-track { background: rgba(240,237,230,0.05); border-radius: 4px; height: 28px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); display: flex; align-items: center; padding-left: 10px; min-width: 4px; }
 .bar-fill-guess { background: linear-gradient(90deg, #2563EB, #3B82F6); box-shadow: 0 0 20px rgba(59,130,246,0.3); }
 .bar-fill-debt { background: linear-gradient(90deg, #DC2626, #EF4444); box-shadow: 0 0 20px rgba(220,38,38,0.3); }
-
-.verdict {
-    margin-top: 1.5rem;
-    padding: 1.25rem 1.5rem;
-    border-radius: 12px;
-    border-left: 4px solid;
-}
+.verdict { margin-top: 1.5rem; padding: 1.25rem 1.5rem; border-radius: 12px; border-left: 4px solid; }
 .verdict-low { background: rgba(220,38,38,0.06); border-color: #DC2626; }
 .verdict-close { background: rgba(34,197,94,0.06); border-color: #22C55E; }
 .verdict-high { background: rgba(234,179,8,0.06); border-color: #EAB308; }
@@ -168,36 +132,12 @@ html, body, [class*="css"] {
 .verdict-headline { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
 .verdict-body { font-size: 0.875rem; color: #8A8580; line-height: 1.6; }
 .verdict-body strong { color: #C8C4BC; }
-
 .stat-row { display: flex; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap; }
-.stat-pill {
-    flex: 1;
-    min-width: 140px;
-    background: rgba(240,237,230,0.04);
-    border: 1px solid rgba(240,237,230,0.07);
-    border-radius: 10px;
-    padding: 0.9rem 1rem;
-    text-align: center;
-}
-.stat-pill-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
-    color: #5A5750;
-    text-transform: uppercase;
-    margin-bottom: 0.3rem;
-}
+.stat-pill { flex: 1; min-width: 140px; background: rgba(240,237,230,0.04); border: 1px solid rgba(240,237,230,0.07); border-radius: 10px; padding: 0.9rem 1rem; text-align: center; }
+.stat-pill-label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; color: #5A5750; text-transform: uppercase; margin-bottom: 0.3rem; }
 .stat-pill-value { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.05em; }
-
 .styled-divider { border: none; border-top: 1px solid rgba(240,237,230,0.06); margin: 1.5rem 0; }
-.reset-hint {
-    text-align: center;
-    font-size: 0.75rem;
-    color: #3A3730;
-    font-family: 'DM Mono', monospace;
-    margin-top: 1rem;
-    letter-spacing: 0.05em;
-}
+.reset-hint { text-align: center; font-size: 0.75rem; color: #3A3730; font-family: 'DM Mono', monospace; margin-top: 1rem; letter-spacing: 0.05em; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -210,10 +150,8 @@ def load_data(url: str) -> pd.DataFrame:
         csv_url = url.split("/edit")[0] + "/export?format=csv&gid=0"
     else:
         csv_url = url + "/export?format=csv&gid=0"
-
     df = pd.read_csv(csv_url)
     df.columns = df.columns.str.strip()
-
     rename_map = {}
     for col in df.columns:
         low = col.lower().strip()
@@ -224,27 +162,22 @@ def load_data(url: str) -> pd.DataFrame:
         elif "total" in low: rename_map[col] = "Total"
         elif any(x in low for x in ["debt", "federal"]): rename_map[col] = "US Debt"
     df.rename(columns=rename_map, inplace=True)
-
     for col in ["Years Ago", "Daily Cost", "Total", "US Debt"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
-
     return df.dropna(subset=["Event"])
 
 def fmt_dollars(n: float) -> str:
-    if n >= 1_000_000_000_000:
-        return f"${n/1_000_000_000_000:.2f}T"
-    elif n >= 1_000_000_000:
-        return f"${n/1_000_000_000:.2f}B"
-    elif n >= 1_000_000:
-        return f"${n/1_000_000:.2f}M"
+    if n >= 1_000_000_000_000: return f"${n/1_000_000_000_000:.2f}T"
+    elif n >= 1_000_000_000: return f"${n/1_000_000_000:.2f}B"
+    elif n >= 1_000_000: return f"${n/1_000_000:.2f}M"
     return f"${n:,.0f}"
 
 def fmt_dollars_full(n: float) -> str:
     return f"${n:,.0f}"
 
 # ─────────────────────────────────────────────
-#  UI
+#  MAIN APP
 # ─────────────────────────────────────────────
 st.markdown("""
 <div class="hero">
@@ -259,10 +192,8 @@ st.markdown("""
 
 st.markdown(f"""
 <div class="debt-ticker">
-    <div>
-        <div class="ticker-label">Current US National Debt</div>
-        <div class="ticker-value">{fmt_dollars_full(US_DEBT)}</div>
-    </div>
+    <div><div class="ticker-label">Current US National Debt</div>
+    <div class="ticker-value">{fmt_dollars_full(US_DEBT)}</div></div>
     <div style="font-size:2.5rem; opacity:0.2;">💸</div>
 </div>
 """, unsafe_allow_html=True)
@@ -277,49 +208,53 @@ if df.empty:
     st.error("Sheet loaded but has no data.")
     st.stop()
 
-st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
+# ─────────────────────────────────────────────
+#  FORM (fixes stuck selectbox forever)
+# ─────────────────────────────────────────────
+with st.form("debt_form"):
+    st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
 
-event_options = df["Event"].tolist()
-selected_event = st.selectbox(
-    "CHOOSE A HISTORICAL EVENT",
-    options=event_options,
-    index=0,
-    key="event_select_unique"
-)
+    event_options = df["Event"].tolist()
+    selected_event = st.selectbox(
+        "CHOOSE A HISTORICAL EVENT",
+        options=event_options,
+        index=0,
+        key="event_select"
+    )
 
-row = df[df["Event"] == selected_event].iloc[0]
-years_ago = int(row["Years Ago"]) if pd.notna(row.get("Years Ago")) else 0
-date_val = int(row["Date"]) if pd.notna(row.get("Date")) else "Unknown"
-actual_daily = float(row.get("Daily Cost", 0)) or 0
+    row = df[df["Event"] == selected_event].iloc[0]
+    years_ago = int(row["Years Ago"]) if pd.notna(row.get("Years Ago")) else 0
+    date_val = int(row["Date"]) if pd.notna(row.get("Date")) else "Unknown"
+    actual_daily = float(row.get("Daily Cost", 0)) or 0
 
-st.markdown(f"""
-<div class="event-card">
-    <div class="event-label">Selected Event</div>
-    <div class="event-name">{selected_event}</div>
-    <div class="event-meta">
-        <div class="meta-chip">📅 Year <strong>{date_val}</strong></div>
-        <div class="meta-chip">⏳ <strong>{years_ago:,}</strong> years ago</div>
-        <div class="meta-chip">📐 <strong>{years_ago * 365:,}</strong> days of spending</div>
+    st.markdown(f"""
+    <div class="event-card">
+        <div class="event-label">Selected Event</div>
+        <div class="event-name">{selected_event}</div>
+        <div class="event-meta">
+            <div class="meta-chip">📅 Year <strong>{date_val}</strong></div>
+            <div class="meta-chip">⏳ <strong>{years_ago:,}</strong> years ago</div>
+            <div class="meta-chip">📐 <strong>{years_ago * 365:,}</strong> days of spending</div>
+        </div>
     </div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
+    st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
 
-guess = st.number_input(
-    "YOUR GUESS — DAILY DOLLARS NEEDED TO EQUAL DEBT ($)",
-    min_value=0,
-    value=0,
-    step=1_000_000,
-    format="%d",
-    key="guess_input",
-    help="Enter what you think the daily amount would need to be since that event to equal today's debt"
-)
+    guess = st.number_input(
+        "YOUR GUESS — DAILY DOLLARS NEEDED TO EQUAL DEBT ($)",
+        min_value=0,
+        value=0,
+        step=1_000_000,
+        format="%d",
+        key="guess_input",
+        help="Enter what you think the daily amount would need to be since that event to equal today's debt"
+    )
 
-calculate = st.button("REVEAL THE TRUTH 🔍", key="calc_btn")
+    calculate = st.form_submit_button("REVEAL THE TRUTH 🔍", type="primary")
 
 # ─────────────────────────────────────────────
-#  RESULTS – FIXED RENDERING
+#  RESULTS (split into separate markdowns = guaranteed rendering)
 # ─────────────────────────────────────────────
 if calculate and guess > 0:
     guess_total = guess * years_ago * 365
@@ -329,79 +264,58 @@ if calculate and guess > 0:
     ratio = guess / actual_daily if actual_daily > 0 else 0
 
     if ratio < 0.1:
-        verdict_class = "verdict-low"
-        verdict_emoji = "😱"
+        verdict_class = "verdict-low"; verdict_emoji = "😱"
         verdict_headline = "Way Under — Reality Is Staggering"
         verdict_body = f"Your guess of <strong>{fmt_dollars(guess)}/day</strong> is less than 10% of the amount needed. The break-even daily amount is <strong>{fmt_dollars(actual_daily)}/day</strong>."
     elif ratio < 0.5:
-        verdict_class = "verdict-low"
-        verdict_emoji = "📉"
+        verdict_class = "verdict-low"; verdict_emoji = "📉"
         verdict_headline = "Under By A Wide Margin"
         verdict_body = f"The required daily amount of <strong>{fmt_dollars(actual_daily)}/day</strong> is roughly <strong>{1/ratio:.1f}x</strong> higher than your guess."
     elif ratio <= 2.0:
-        verdict_class = "verdict-close"
-        verdict_emoji = "🎯"
+        verdict_class = "verdict-close"; verdict_emoji = "🎯"
         verdict_headline = "Remarkably Close!"
         verdict_body = f"You guessed <strong>{fmt_dollars(guess)}/day</strong> vs the required <strong>{fmt_dollars(actual_daily)}/day</strong>."
     elif ratio <= 10:
-        verdict_class = "verdict-high"
-        verdict_emoji = "📈"
+        verdict_class = "verdict-high"; verdict_emoji = "📈"
         verdict_headline = "You Overshot"
         verdict_body = f"Your guess was about <strong>{ratio:.1f}x</strong> higher than required."
     else:
-        verdict_class = "verdict-high"
-        verdict_emoji = "🚀"
+        verdict_class = "verdict-high"; verdict_emoji = "🚀"
         verdict_headline = "Way Over The Top"
         verdict_body = f"That's <strong>{ratio:.0f}x</strong> the required daily figure."
 
+    # Split results into separate safe markdown blocks
+    st.markdown('<div class="result-panel"><div class="result-title">THE BREAKDOWN</div>', unsafe_allow_html=True)
+
     st.markdown(f"""
-    <div class="result-panel">
-        <div class="result-title">THE BREAKDOWN</div>
+    <div class="bar-row">
+        <div class="bar-meta"><span class="bar-name">🔵 YOUR GUESS TOTAL</span><span class="bar-amount" style="color:#3B82F6">{fmt_dollars_full(guess_total)}</span></div>
+        <div class="bar-track"><div class="bar-fill bar-fill-guess" style="width:{guess_pct:.1f}%"></div></div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        <div class="bar-row">
-            <div class="bar-meta">
-                <span class="bar-name">🔵 YOUR GUESS TOTAL</span>
-                <span class="bar-amount" style="color:#3B82F6">{fmt_dollars_full(guess_total)}</span>
-            </div>
-            <div class="bar-track">
-                <div class="bar-fill bar-fill-guess" style="width:{guess_pct:.1f}%"></div>
-            </div>
-        </div>
+    st.markdown(f"""
+    <div class="bar-row">
+        <div class="bar-meta"><span class="bar-name">🔴 US NATIONAL DEBT</span><span class="bar-amount" style="color:#EF4444">{fmt_dollars_full(US_DEBT)}</span></div>
+        <div class="bar-track"><div class="bar-fill bar-fill-debt" style="width:{debt_pct:.1f}%"></div></div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        <div class="bar-row">
-            <div class="bar-meta">
-                <span class="bar-name">🔴 US NATIONAL DEBT</span>
-                <span class="bar-amount" style="color:#EF4444">{fmt_dollars_full(US_DEBT)}</span>
-            </div>
-            <div class="bar-track">
-                <div class="bar-fill bar-fill-debt" style="width:{debt_pct:.1f}%"></div>
-            </div>
-        </div>
+    st.markdown(f"""
+    <div class="stat-row">
+        <div class="stat-pill"><div class="stat-pill-label">Your Daily Guess</div><div class="stat-pill-value" style="color:#3B82F6">{fmt_dollars(guess)}</div></div>
+        <div class="stat-pill"><div class="stat-pill-label">Break-Even Daily Amount</div><div class="stat-pill-value" style="color:#EF4444">{fmt_dollars(actual_daily)}</div></div>
+        <div class="stat-pill"><div class="stat-pill-label">Your Total</div><div class="stat-pill-value" style="color:#3B82F6">{fmt_dollars(guess_total)}</div></div>
+        <div class="stat-pill"><div class="stat-pill-label">Debt vs Your Total</div><div class="stat-pill-value" style="color:#8A8580">{US_DEBT / max(guess_total, 1):.1f}x</div></div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        <div class="stat-row">
-            <div class="stat-pill">
-                <div class="stat-pill-label">Your Daily Guess</div>
-                <div class="stat-pill-value" style="color:#3B82F6">{fmt_dollars(guess)}</div>
-            </div>
-            <div class="stat-pill">
-                <div class="stat-pill-label">Break-Even Daily Amount</div>
-                <div class="stat-pill-value" style="color:#EF4444">{fmt_dollars(actual_daily)}</div>
-            </div>
-            <div class="stat-pill">
-                <div class="stat-pill-label">Your Total</div>
-                <div class="stat-pill-value" style="color:#3B82F6">{fmt_dollars(guess_total)}</div>
-            </div>
-            <div class="stat-pill">
-                <div class="stat-pill-label">Debt vs Your Total</div>
-                <div class="stat-pill-value" style="color:#8A8580">{US_DEBT / max(guess_total, 1):.1f}x</div>
-            </div>
-        </div>
-
-        <div class="verdict {verdict_class}">
-            <div class="verdict-emoji">{verdict_emoji}</div>
-            <div class="verdict-headline">{verdict_headline}</div>
-            <div class="verdict-body">{verdict_body}</div>
-        </div>
+    st.markdown(f"""
+    <div class="verdict {verdict_class}">
+        <div class="verdict-emoji">{verdict_emoji}</div>
+        <div class="verdict-headline">{verdict_headline}</div>
+        <div class="verdict-body">{verdict_body}</div>
+    </div>
     </div>
     <div class="reset-hint">↑ Change the event or your guess above to play again</div>
     """, unsafe_allow_html=True)
