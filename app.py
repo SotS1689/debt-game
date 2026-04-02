@@ -6,8 +6,7 @@ import pandas as pd
 # ─────────────────────────────────────────────
 # Paste your Google Sheet URL below.
 # The sheet must be shared as "Anyone with the link can VIEW"
-SHEET_URL = https://docs.google.com/spreadsheets/d/e/2PACX-1vSsJxcjAYcpqz4xAgR9oNG3d31Eq3y4Z_pk4QqLWOQQvWMYLG36jftwahCV1mHt5aQ-oQ1Pep7PK6iG/pubhtml?gid=2120968951&single=true
-
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1DWdt6dWEm1l4Yv-smXwoJv6IR-0f-6SEHKBk7DRnZv4/edit?usp=sharing"
 US_DEBT = 39_000_000_000_000  # Update this number whenever you like
 
 # ─────────────────────────────────────────────
