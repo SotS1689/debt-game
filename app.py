@@ -4,7 +4,7 @@ import pandas as pd
 # ─────────────────────────────────────────────
 #  CONFIGURATION  ← Only thing you need to edit
 # ─────────────────────────────────────────────
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1DWdt6dWEm1l4Yv-smXwoJv6IR-0f-6SEHKBk7DRnZv4/edit?usp=sharing"
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1HfbVFmwGjGGqAfqQ2adXbpZYPJ4pNe1Miel8_u3PCao/edit?usp=sharing"
 SHEET_GID = 0  # gid=0 is now your only "Events" sheet
 
 US_DEBT = 39_000_000_000_000  # Update this number whenever you like
