@@ -4,8 +4,11 @@ import pandas as pd
 # ─────────────────────────────────────────────
 #  CONFIGURATION  ← Only thing you need to edit
 # ─────────────────────────────────────────────
+# Use the URL from your **new** workbook that contains ONLY the Events sheet
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1HfbVFmwGjGGqAfqQ2adXbpZYPJ4pNe1Miel8_u3PCao/edit?usp=sharing"
-SHEET_GID = 0  # gid=0 is now your only "Events" sheet
+
+# gid=0 is always the first (and now only) sheet in your new workbook
+SHEET_GID = 0
 
 US_DEBT = 39_000_000_000_000  # Update this number whenever you like
 
@@ -20,7 +23,7 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-#  GLOBAL STYLES
+#  GLOBAL STYLES (unchanged)
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -142,20 +145,23 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; color: #F0EDE6;
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  DATA LOADING – Tailored exactly to your column names
+#  DATA LOADING – Strict clean URL builder to fix 400 error
 # ─────────────────────────────────────────────
 @st.cache_data(ttl=300)
 def load_data(url: str, gid: int) -> pd.DataFrame:
-    if "/edit" in url:
-        base = url.split("/edit")[0]
+    # Extract only the spreadsheet ID and build a clean export URL
+    # This is the most reliable way in 2026 for both old and brand-new single-sheet workbooks
+    if "/d/" in url:
+        spreadsheet_id = url.split("/d/")[1].split("/")[0].split("?")[0]
     else:
-        base = url.split("?")[0]
-    csv_url = f"{base}/export?format=csv&gid={gid}"
+        spreadsheet_id = url.split("/")[5] if len(url.split("/")) > 5 else url.split("?")[0]
+
+    csv_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid={gid}"
 
     df = pd.read_csv(csv_url)
     df.columns = [col.strip() for col in df.columns]
 
-    # Exact mapping for your headers: Event, Date, Years Past, Dollars per Day, Total, US Federal Debt
+    # Exact mapping for your column names
     rename_map = {}
     for col in df.columns:
         low = col.lower()
@@ -220,16 +226,14 @@ st.markdown(f"""
 try:
     df = load_data(SHEET_URL, SHEET_GID)
 except Exception as e:
-    st.error(f"⚠️ Couldn't load Google Sheet.\n\nError: {e}")
+    st.error(f"⚠️ Couldn't load Google Sheet.\n\nError: {e}\n\nMake sure the sheet is shared as 'Anyone with the link can view' and the URL points to a valid Google Sheet.")
     st.stop()
 
 if df.empty:
     st.error("Sheet loaded but has no data rows.")
     st.stop()
 
-# ─────────────────────────────────────────────
-#  LIVE EVENT SELECTOR (outside form so it updates instantly)
-# ─────────────────────────────────────────────
+# Live event selector
 st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
 
 event_options = df["Event"].tolist()
@@ -240,7 +244,6 @@ selected_event = st.selectbox(
     key="event_select"
 )
 
-# Extract row data live
 row = df[df["Event"] == selected_event].iloc[0]
 years_ago = int(row.get("Years Ago", 0)) if pd.notna(row.get("Years Ago")) else 0
 date_val = int(row.get("Date", 0)) if pd.notna(row.get("Date")) else "Unknown"
@@ -270,14 +273,9 @@ guess = st.number_input(
     help="Enter what you think the daily amount would need to be since that event to equal today's debt"
 )
 
-# ─────────────────────────────────────────────
-#  SUBMIT BUTTON (only this is in the form)
-# ─────────────────────────────────────────────
 calculate = st.button("REVEAL THE TRUTH 🔍", type="primary", key="calc_btn")
 
-# ─────────────────────────────────────────────
-#  RESULTS
-# ─────────────────────────────────────────────
+# Results
 if calculate and guess > 0:
     guess_total = guess * years_ago * 365
     max_val = max(guess_total, US_DEBT, 1)
