@@ -8,7 +8,7 @@ import pandas as pd
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1HfbVFmwGjGGqAfqQ2adXbpZYPJ4pNe1Miel8_u3PCao/edit?usp=sharing"
 
 # gid=0 is your Events sheet
-SHEET_GID = 0
+SHEET_GID = 1
 
 US_DEBT = 39_000_000_000_000  # Update this number whenever you like
 
