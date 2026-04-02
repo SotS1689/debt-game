@@ -341,7 +341,7 @@ html, body, [class*="css"] {
     margin: 1.5rem 0;
 }
 
-/* ── Reset button ── */
+/* ── Reset hint ── */
 .reset-hint {
     text-align: center;
     font-size: 0.75rem;
@@ -357,7 +357,7 @@ html, body, [class*="css"] {
 # ─────────────────────────────────────────────
 #  DATA LOADING
 # ─────────────────────────────────────────────
-@st.cache_data(ttl=300)  # Cache for 5 minutes
+@st.cache_data(ttl=300)
 def load_data(url: str) -> pd.DataFrame:
     """Convert any Google Sheets URL to a CSV export URL and load it."""
     if "/edit" in url:
@@ -370,7 +370,7 @@ def load_data(url: str) -> pd.DataFrame:
     df = pd.read_csv(csv_url)
     df.columns = df.columns.str.strip()
 
-    # Normalize column names to be robust to minor variations
+    # Normalize column names to be robust
     rename_map = {}
     for col in df.columns:
         low = col.lower().strip()
@@ -388,7 +388,7 @@ def load_data(url: str) -> pd.DataFrame:
             rename_map[col] = "US Debt"
     df.rename(columns=rename_map, inplace=True)
 
-    # Ensure numeric columns are actually numeric
+    # Ensure numeric columns
     for col in ["Years Ago", "Daily Cost", "Total", "US Debt"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -487,4 +487,113 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  GU
+#  GUESS INPUT
+# ─────────────────────────────────────────────
+st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
+
+guess = st.number_input(
+    "YOUR GUESS — DAILY DOLLARS NEEDED TO EQUAL DEBT ($)",
+    min_value=0,
+    value=0,
+    step=1_000_000,
+    format="%d",
+    key="guess_input",
+    help="Enter what you think the daily amount would need to be since that event to equal today's debt"
+)
+
+calculate = st.button("REVEAL THE TRUTH 🔍", key="calc_btn")
+
+# ─────────────────────────────────────────────
+#  RESULTS
+# ─────────────────────────────────────────────
+if calculate and guess > 0:
+
+    guess_total = guess * years_ago * 365
+    max_val = max(guess_total, US_DEBT, 1)
+
+    guess_pct = min((guess_total / max_val) * 100, 100)
+    debt_pct = min((US_DEBT / max_val) * 100, 100)
+
+    ratio = guess / actual_daily if actual_daily > 0 else 0
+
+    # Verdict logic
+    if ratio < 0.1:
+        verdict_class = "verdict-low"
+        verdict_emoji = "😱"
+        verdict_headline = "Way Under — Reality Is Staggering"
+        verdict_body = f"Your guess of <strong>{fmt_dollars(guess)}/day</strong> is less than 10% of the amount needed to reach today's debt. The break-even daily amount is <strong>{fmt_dollars(actual_daily)}/day</strong> — most people vastly underestimate this scale."
+    elif ratio < 0.5:
+        verdict_class = "verdict-low"
+        verdict_emoji = "📉"
+        verdict_headline = "Under By A Wide Margin"
+        verdict_body = f"Close-ish, but the break-even daily amount of <strong>{fmt_dollars(actual_daily)}/day</strong> is roughly <strong>{1/ratio:.1f}x</strong> higher than your guess. The cumulative effect over {years_ago:,} years is enormous."
+    elif ratio <= 2.0:
+        verdict_class = "verdict-close"
+        verdict_emoji = "🎯"
+        verdict_headline = "Remarkably Close!"
+        verdict_body = f"You guessed <strong>{fmt_dollars(guess)}/day</strong> vs the required <strong>{fmt_dollars(actual_daily)}/day</strong>. You have a strong grasp of the scale needed to reach today's debt."
+    elif ratio <= 10:
+        verdict_class = "verdict-high"
+        verdict_emoji = "📈"
+        verdict_headline = "You Overshot"
+        verdict_body = f"Your guess was about <strong>{ratio:.1f}x</strong> higher than the required <strong>{fmt_dollars(actual_daily)}/day</strong>. Even so, compared to the full $39T debt, every number looks small."
+    else:
+        verdict_class = "verdict-high"
+        verdict_emoji = "🚀"
+        verdict_headline = "Way Over The Top"
+        verdict_body = f"That's <strong>{ratio:.0f}x</strong> the required figure of <strong>{fmt_dollars(actual_daily)}/day</strong>. Either way, the $39T debt dwarfs almost any guess."
+
+    st.markdown(f"""
+    <div class="result-panel">
+        <div class="result-title">The Breakdown</div>
+
+        <div class="bar-row">
+            <div class="bar-meta">
+                <span class="bar-name">🔵 YOUR GUESS TOTAL</span>
+                <span class="bar-amount" style="color:#3B82F6">{fmt_dollars_full(guess_total)}</span>
+            </div>
+            <div class="bar-track">
+                <div class="bar-fill bar-fill-guess" style="width:{guess_pct:.1f}%"></div>
+            </div>
+        </div>
+
+        <div class="bar-row">
+            <div class="bar-meta">
+                <span class="bar-name">🔴 US NATIONAL DEBT</span>
+                <span class="bar-amount" style="color:#EF4444">{fmt_dollars_full(US_DEBT)}</span>
+            </div>
+            <div class="bar-track">
+                <div class="bar-fill bar-fill-debt" style="width:{debt_pct:.1f}%"></div>
+            </div>
+        </div>
+
+        <div class="stat-row">
+            <div class="stat-pill">
+                <div class="stat-pill-label">Your Daily Guess</div>
+                <div class="stat-pill-value" style="color:#3B82F6">{fmt_dollars(guess)}</div>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-pill-label">Break-Even Daily Amount</div>
+                <div class="stat-pill-value" style="color:#EF4444">{fmt_dollars(actual_daily)}</div>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-pill-label">Your Total</div>
+                <div class="stat-pill-value" style="color:#3B82F6">{fmt_dollars(guess_total)}</div>
+            </div>
+            <div class="stat-pill">
+                <div class="stat-pill-label">Debt vs Your Total</div>
+                <div class="stat-pill-value" style="color:#8A8580">{US_DEBT/max(guess_total,1):.1f}x</div>
+            </div>
+        </div>
+
+        <div class="verdict {verdict_class}">
+            <div class="verdict-emoji">{verdict_emoji}</div>
+            <div class="verdict-headline">{verdict_headline}</div>
+            <div class="verdict-body">{verdict_body}</div>
+        </div>
+    </div>
+    <div class="reset-hint">↑ Change the event or your guess above to play again</div>
+    """, unsafe_allow_html=True)
+
+elif calculate and guess == 0:
+    st.warning("Enter a number greater than 0 to see the results.")
