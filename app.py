@@ -7,6 +7,7 @@ import pandas as pd
 # Paste your Google Sheet URL below.
 # The sheet must be shared as "Anyone with the link can VIEW"
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1DWdt6dWEm1l4Yv-smXwoJv6IR-0f-6SEHKBk7DRnZv4/edit?usp=sharing"
+
 US_DEBT = 39_000_000_000_000  # Update this number whenever you like
 
 # ─────────────────────────────────────────────
@@ -420,8 +421,8 @@ st.markdown("""
     <div class="hero-eyebrow">Interactive Challenge</div>
     <div class="hero-title">US DEBT<br><span>THROUGH TIME</span></div>
     <p class="hero-subtitle">
-        Pick a moment in history. Guess how much the US spends per day.<br>
-        See how it stacks up against <strong style="color:#F0EDE6">$39 trillion</strong> in national debt.
+        Pick a moment in history. Guess how many dollars per day would be needed<br>
+        since that date to equal today's national debt. See how your total stacks up.
     </p>
 </div>
 """, unsafe_allow_html=True)
@@ -469,7 +470,6 @@ row = df[df["Event"] == selected_event].iloc[0]
 years_ago = int(row["Years Ago"]) if pd.notna(row.get("Years Ago")) else 0
 date_val = int(row["Date"]) if pd.notna(row.get("Date")) else "Unknown"
 actual_daily = float(row["Daily Cost"]) if pd.notna(row.get("Daily Cost")) else 0
-actual_total = float(row["Total"]) if pd.notna(row.get("Total")) else (actual_daily * years_ago * 365)
 
 # ─────────────────────────────────────────────
 #  EVENT CARD
@@ -487,120 +487,4 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  GUESS INPUT
-# ─────────────────────────────────────────────
-st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
-
-guess = st.number_input(
-    "YOUR GUESS — US GOVERNMENT SPENDING PER DAY ($)",
-    min_value=0,
-    value=None,
-    placeholder="Type a number, e.g. 5000000",
-    step=1_000_000,
-    format="%d",
-    key="guess_input",
-    help="Enter what you think the US spends per day in today's dollars"
-)
-
-calculate = st.button("REVEAL THE TRUTH 🔍", key="calc_btn")
-
-# ─────────────────────────────────────────────
-#  RESULTS
-# ─────────────────────────────────────────────
-if calculate and guess is not None and guess > 0:
-
-    guess_total = guess * years_ago * 365
-    max_val = max(guess_total, US_DEBT, 1)
-
-    guess_pct = min((guess_total / max_val) * 100, 100)
-    debt_pct = min((US_DEBT / max_val) * 100, 100)
-
-    # Accuracy ratio
-    if actual_daily > 0:
-        ratio = guess / actual_daily
-        accuracy_pct = min(ratio, 1 / ratio) * 100 if ratio != 0 else 0
-    else:
-        ratio = 0
-        accuracy_pct = 0
-
-    # Verdict logic
-    if ratio < 0.1:
-        verdict_class = "verdict-low"
-        verdict_emoji = "😱"
-        verdict_headline = "Way Under — Reality Is Staggering"
-        verdict_body = f"Your guess of <strong>{fmt_dollars(guess)}/day</strong> is less than 10% of the actual figure. The real daily spend has been <strong>{fmt_dollars(actual_daily)}/day</strong> — most people vastly underestimate this."
-    elif ratio < 0.5:
-        verdict_class = "verdict-low"
-        verdict_emoji = "📉"
-        verdict_headline = "Under By A Wide Margin"
-        verdict_body = f"Close-ish, but the actual daily cost of <strong>{fmt_dollars(actual_daily)}/day</strong> is roughly <strong>{1/ratio:.1f}x</strong> higher than your guess. The cumulative effect over {years_ago:,} years is enormous."
-    elif ratio <= 2.0:
-        verdict_class = "verdict-close"
-        verdict_emoji = "🎯"
-        verdict_headline = "Remarkably Close!"
-        verdict_body = f"You guessed <strong>{fmt_dollars(guess)}/day</strong> vs the actual <strong>{fmt_dollars(actual_daily)}/day</strong>. You have a strong grasp of the scale of US government spending."
-    elif ratio <= 10:
-        verdict_class = "verdict-high"
-        verdict_emoji = "📈"
-        verdict_headline = "You Overshot"
-        verdict_body = f"Your guess was about <strong>{ratio:.1f}x</strong> higher than the actual <strong>{fmt_dollars(actual_daily)}/day</strong>. Even so, compared to the full $39T debt, every number looks small."
-    else:
-        verdict_class = "verdict-high"
-        verdict_emoji = "🚀"
-        verdict_headline = "Way Over The Top"
-        verdict_body = f"That's <strong>{ratio:.0f}x</strong> the actual figure of <strong>{fmt_dollars(actual_daily)}/day</strong>. Either way, the $39T debt dwarfs almost any guess."
-
-    st.markdown(f"""
-    <div class="result-panel">
-        <div class="result-title">The Breakdown</div>
-
-        <div class="bar-row">
-            <div class="bar-meta">
-                <span class="bar-name">🔵 YOUR GUESS TOTAL</span>
-                <span class="bar-amount" style="color:#3B82F6">{fmt_dollars_full(guess_total)}</span>
-            </div>
-            <div class="bar-track">
-                <div class="bar-fill bar-fill-guess" style="width:{guess_pct:.1f}%"></div>
-            </div>
-        </div>
-
-        <div class="bar-row">
-            <div class="bar-meta">
-                <span class="bar-name">🔴 US NATIONAL DEBT</span>
-                <span class="bar-amount" style="color:#EF4444">{fmt_dollars_full(US_DEBT)}</span>
-            </div>
-            <div class="bar-track">
-                <div class="bar-fill bar-fill-debt" style="width:{debt_pct:.1f}%"></div>
-            </div>
-        </div>
-
-        <div class="stat-row">
-            <div class="stat-pill">
-                <div class="stat-pill-label">Your Daily Guess</div>
-                <div class="stat-pill-value" style="color:#3B82F6">{fmt_dollars(guess)}</div>
-            </div>
-            <div class="stat-pill">
-                <div class="stat-pill-label">Actual Daily Cost</div>
-                <div class="stat-pill-value" style="color:#EF4444">{fmt_dollars(actual_daily)}</div>
-            </div>
-            <div class="stat-pill">
-                <div class="stat-pill-label">Your Total</div>
-                <div class="stat-pill-value" style="color:#3B82F6">{fmt_dollars(guess_total)}</div>
-            </div>
-            <div class="stat-pill">
-                <div class="stat-pill-label">Debt vs Your Total</div>
-                <div class="stat-pill-value" style="color:#8A8580">{US_DEBT/max(guess_total,1):.1f}x</div>
-            </div>
-        </div>
-
-        <div class="verdict {verdict_class}">
-            <div class="verdict-emoji">{verdict_emoji}</div>
-            <div class="verdict-headline">{verdict_headline}</div>
-            <div class="verdict-body">{verdict_body}</div>
-        </div>
-    </div>
-    <div class="reset-hint">↑ Change the event or your guess above to play again</div>
-    """, unsafe_allow_html=True)
-
-elif calculate and (guess is None or guess == 0):
-    st.warning("Enter a number greater than 0 to see the results.")
+#  GU
