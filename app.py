@@ -208,7 +208,7 @@ def fmt_dollars_full(n: float) -> str:
 st.markdown("""
 <div class="hero">
     <div class="hero-eyebrow">Interactive Challenge</div>
-    <div class="hero-title">SCALE OF THE<br><span>USA FEDERAL DEBT</span></div>
+    <div class="hero-title">SCALE OF THE<br><span>USA NATIONAL DEBT</span></div>
     <p class="hero-subtitle" style="text-align: center; margin: 20px auto 0; max-width: 480px; display: block;">
         Pick a moment in history. Guess how many dollars per day would be needed since that date to equal today's national debt. See how your total stacks up.
     </p>
