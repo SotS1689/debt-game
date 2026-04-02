@@ -4,10 +4,10 @@ import pandas as pd
 # ─────────────────────────────────────────────
 #  CONFIGURATION  ← Only thing you need to edit
 # ─────────────────────────────────────────────
-# Paste the full URL of your new workbook here (the one with ONLY the Events sheet)
+# Use the exact URL of your workbook (the one with ONLY the Events sheet)
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1HfbVFmwGjGGqAfqQ2adXbpZYPJ4pNe1Miel8_u3PCao/edit?usp=sharing"
 
-# gid=0 points to your only sheet (Events)
+# gid=0 is your Events sheet
 SHEET_GID = 0
 
 US_DEBT = 39_000_000_000_000  # Update this number whenever you like
@@ -145,7 +145,7 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; color: #F0EDE6;
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  DATA LOADING – Strict, reliable URL builder (fixes 400 error)
+#  DATA LOADING – Most reliable URL construction (fixes 400)
 # ─────────────────────────────────────────────
 @st.cache_data(ttl=300)
 def load_data(url: str, gid: int) -> pd.DataFrame:
@@ -153,10 +153,9 @@ def load_data(url: str, gid: int) -> pd.DataFrame:
     if "/d/" in url:
         spreadsheet_id = url.split("/d/")[1].split("/")[0].split("?")[0]
     else:
-        parts = url.split("/")
-        spreadsheet_id = parts[5] if len(parts) > 5 else url.split("?")[0]
+        spreadsheet_id = url.split("/")[5] if len(url.split("/")) > 5 else url.split("?")[0]
 
-    # Build the exact export URL Google accepts
+    # This is the exact format that works reliably for CSV export
     csv_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid={gid}"
 
     df = pd.read_csv(csv_url)
@@ -227,7 +226,7 @@ st.markdown(f"""
 try:
     df = load_data(SHEET_URL, SHEET_GID)
 except Exception as e:
-    st.error(f"⚠️ Couldn't load Google Sheet.\n\nError: {e}\n\nMake sure the sheet is shared as 'Anyone with the link can view'.")
+    st.error(f"⚠️ Couldn't load Google Sheet.\n\nError: {e}\n\nMake sure the sheet is shared as 'Anyone with the link can view' and try refreshing the share settings.")
     st.stop()
 
 if df.empty:
