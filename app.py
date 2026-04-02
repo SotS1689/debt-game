@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import urllib.parse
 
 # ─────────────────────────────────────────────
 #  CONFIGURATION  ← Only thing you need to edit
@@ -141,17 +142,23 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; color: #F0EDE6;
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  DATA LOADING – Made ultra robust against column name variations
+#  DATA LOADING – Robust URL + exact column mapping for your sheet
 # ─────────────────────────────────────────────
 @st.cache_data(ttl=300)
 def load_data(url: str) -> pd.DataFrame:
+    # Clean URL and force proper CSV export (fixes 400 Bad Request)
     if "/edit" in url:
-        csv_url = url.split("/edit")[0] + "/export?format=csv&gid=0"
+        base = url.split("/edit")[0]
+    elif "/pub" in url:
+        base = url.split("/pub")[0]
     else:
-        csv_url = url + "/export?format=csv&gid=0"
+        base = url.split("?")[0]  # remove any query params like usp=sharing
+    csv_url = base + "/export?format=csv&gid=0"
+
     df = pd.read_csv(csv_url)
     df.columns = [col.strip() for col in df.columns]
 
+    # Exact mapping for your sheet's real column names
     rename_map = {}
     for col in df.columns:
         low = col.lower()
@@ -159,27 +166,25 @@ def load_data(url: str) -> pd.DataFrame:
             rename_map[col] = "Event"
         elif "date" in low:
             rename_map[col] = "Date"
-        elif "year" in low or "ago" in low:
+        elif "years past" in low or "years ago" in low or "year" in low:
             rename_map[col] = "Years Ago"
-        elif any(x in low for x in ["dollar", "daily", "per day", "cost", "spend"]):
+        elif "dollars per day" in low or "daily" in low or "cost" in low or "spend" in low:
             rename_map[col] = "Daily Cost"
         elif "total" in low:
             rename_map[col] = "Total"
-        elif any(x in low for x in ["debt", "federal"]):
+        elif "debt" in low or "federal" in low:
             rename_map[col] = "US Debt"
     df.rename(columns=rename_map, inplace=True)
 
-    # Force numeric and warn if Daily Cost is still NaN
+    # Convert to numeric
     for col in ["Years Ago", "Daily Cost", "Total", "US Debt"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    if "Daily Cost" in df.columns and df["Daily Cost"].isna().all():
-        st.warning("⚠️ Could not detect 'Daily Cost' column. Check your Google Sheet headers.")
     return df.dropna(subset=["Event"])
 
 def fmt_dollars(n: float) -> str:
-    if pd.isna(n) or n == 0:
+    if pd.isna(n) or n <= 0:
         return "$0"
     if n >= 1_000_000_000_000:
         return f"${n/1_000_000_000_000:.2f}T"
@@ -192,7 +197,7 @@ def fmt_dollars(n: float) -> str:
 def fmt_dollars_full(n: float) -> str:
     if pd.isna(n):
         return "$0"
-    return f"${n:,.0f}"
+    return f"${int(n):,}"
 
 # ─────────────────────────────────────────────
 #  UI
@@ -219,15 +224,15 @@ st.markdown(f"""
 try:
     df = load_data(SHEET_URL)
 except Exception as e:
-    st.error(f"⚠️ Couldn't load Google Sheet: {e}")
+    st.error(f"⚠️ Couldn't load Google Sheet.\n\nError: {e}\n\nMake sure the sheet is shared as 'Anyone with the link can view'.")
     st.stop()
 
 if df.empty:
-    st.error("Sheet loaded but has no data.")
+    st.error("Sheet loaded but has no data rows.")
     st.stop()
 
 # ─────────────────────────────────────────────
-#  FORM – Fixed event selection
+#  FORM
 # ─────────────────────────────────────────────
 with st.form("debt_form", clear_on_submit=False):
     st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
@@ -240,7 +245,6 @@ with st.form("debt_form", clear_on_submit=False):
         key="event_select"
     )
 
-    # Extract data only after selection
     row = df[df["Event"] == selected_event].iloc[0]
     years_ago = int(row.get("Years Ago", 0)) if pd.notna(row.get("Years Ago")) else 0
     date_val = int(row.get("Date", 0)) if pd.notna(row.get("Date")) else "Unknown"
