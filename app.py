@@ -1,11 +1,20 @@
 import streamlit as st
 import pandas as pd
-import urllib.parse
 
 # ─────────────────────────────────────────────
 #  CONFIGURATION  ← Only thing you need to edit
 # ─────────────────────────────────────────────
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1DWdt6dWEm1l4Yv-smXwoJv6IR-0f-6SEHKBk7DRnZv4/edit?usp=sharing"
+
+# IMPORTANT: After deleting the "Visualizer" sheet, your "Events" sheet is now the only one.
+# Google Sheets uses a numeric "gid" to identify each tab. 
+# Since you deleted the extra sheet, gid=0 should now point to "Events".
+# If you ever add more tabs again, do this to find the correct gid:
+#   1. Open your Google Sheet in a browser
+#   2. Click the "Events" tab
+#   3. Look at the URL in the address bar — it will end with #gid=XXXXXXXXX
+#   4. Copy that number and paste it below
+SHEET_GID = 0
 
 US_DEBT = 39_000_000_000_000  # Update this number whenever you like
 
@@ -142,18 +151,21 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; color: #F0EDE6;
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  DATA LOADING – Robust URL + exact column mapping for your sheet
+#  DATA LOADING – Now forces the exact "Events" sheet using gid
 # ─────────────────────────────────────────────
 @st.cache_data(ttl=300)
-def load_data(url: str) -> pd.DataFrame:
-    # Clean URL and force proper CSV export (fixes 400 Bad Request)
+def load_data(url: str, gid: int) -> pd.DataFrame:
+    """Clean URL and force export from the specific sheet gid (Events)."""
+    # Remove any query parameters and /edit or /pub suffix
     if "/edit" in url:
         base = url.split("/edit")[0]
     elif "/pub" in url:
         base = url.split("/pub")[0]
     else:
-        base = url.split("?")[0]  # remove any query params like usp=sharing
-    csv_url = base + "/export?format=csv&gid=0"
+        base = url.split("?")[0]
+    
+    # This is the fix: explicitly use &gid= so it always reads the Events tab
+    csv_url = f"{base}/export?format=csv&gid={gid}"
 
     df = pd.read_csv(csv_url)
     df.columns = [col.strip() for col in df.columns]
@@ -222,9 +234,9 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 try:
-    df = load_data(SHEET_URL)
+    df = load_data(SHEET_URL, SHEET_GID)
 except Exception as e:
-    st.error(f"⚠️ Couldn't load Google Sheet.\n\nError: {e}\n\nMake sure the sheet is shared as 'Anyone with the link can view'.")
+    st.error(f"⚠️ Couldn't load Google Sheet.\n\nError: {e}\n\nDouble-check that SHEET_GID matches the 'Events' tab.")
     st.stop()
 
 if df.empty:
