@@ -19,7 +19,7 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-#  GLOBAL STYLES (exact same dark theme as before)
+#  GLOBAL STYLES
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -107,7 +107,6 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; color: #F0EDE6;
 }
 .stButton > button:hover { transform: translateY(-1px); box-shadow: 0 8px 32px rgba(220,38,38,0.4) !important; }
 
-/* Results styling */
 .result-panel {
     background: linear-gradient(135deg, #0D1117 0%, #0A0F1A 100%);
     border: 1px solid rgba(240,237,230,0.08);
@@ -142,7 +141,7 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; color: #F0EDE6;
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-#  DATA LOADING
+#  DATA LOADING – Made ultra robust against column name variations
 # ─────────────────────────────────────────────
 @st.cache_data(ttl=300)
 def load_data(url: str) -> pd.DataFrame:
@@ -151,33 +150,52 @@ def load_data(url: str) -> pd.DataFrame:
     else:
         csv_url = url + "/export?format=csv&gid=0"
     df = pd.read_csv(csv_url)
-    df.columns = df.columns.str.strip()
+    df.columns = [col.strip() for col in df.columns]
+
     rename_map = {}
     for col in df.columns:
-        low = col.lower().strip()
-        if "event" in low: rename_map[col] = "Event"
-        elif "date" in low: rename_map[col] = "Date"
-        elif "year" in low: rename_map[col] = "Years Ago"
-        elif any(x in low for x in ["dollar", "per day", "daily"]): rename_map[col] = "Daily Cost"
-        elif "total" in low: rename_map[col] = "Total"
-        elif any(x in low for x in ["debt", "federal"]): rename_map[col] = "US Debt"
+        low = col.lower()
+        if "event" in low:
+            rename_map[col] = "Event"
+        elif "date" in low:
+            rename_map[col] = "Date"
+        elif "year" in low or "ago" in low:
+            rename_map[col] = "Years Ago"
+        elif any(x in low for x in ["dollar", "daily", "per day", "cost", "spend"]):
+            rename_map[col] = "Daily Cost"
+        elif "total" in low:
+            rename_map[col] = "Total"
+        elif any(x in low for x in ["debt", "federal"]):
+            rename_map[col] = "US Debt"
     df.rename(columns=rename_map, inplace=True)
+
+    # Force numeric and warn if Daily Cost is still NaN
     for col in ["Years Ago", "Daily Cost", "Total", "US Debt"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    if "Daily Cost" in df.columns and df["Daily Cost"].isna().all():
+        st.warning("⚠️ Could not detect 'Daily Cost' column. Check your Google Sheet headers.")
     return df.dropna(subset=["Event"])
 
 def fmt_dollars(n: float) -> str:
-    if n >= 1_000_000_000_000: return f"${n/1_000_000_000_000:.2f}T"
-    elif n >= 1_000_000_000: return f"${n/1_000_000_000:.2f}B"
-    elif n >= 1_000_000: return f"${n/1_000_000:.2f}M"
+    if pd.isna(n) or n == 0:
+        return "$0"
+    if n >= 1_000_000_000_000:
+        return f"${n/1_000_000_000_000:.2f}T"
+    elif n >= 1_000_000_000:
+        return f"${n/1_000_000_000:.2f}B"
+    elif n >= 1_000_000:
+        return f"${n/1_000_000:.2f}M"
     return f"${n:,.0f}"
 
 def fmt_dollars_full(n: float) -> str:
+    if pd.isna(n):
+        return "$0"
     return f"${n:,.0f}"
 
 # ─────────────────────────────────────────────
-#  MAIN APP
+#  UI
 # ─────────────────────────────────────────────
 st.markdown("""
 <div class="hero">
@@ -209,9 +227,9 @@ if df.empty:
     st.stop()
 
 # ─────────────────────────────────────────────
-#  FORM (fixes stuck selectbox forever)
+#  FORM – Fixed event selection
 # ─────────────────────────────────────────────
-with st.form("debt_form"):
+with st.form("debt_form", clear_on_submit=False):
     st.markdown('<hr class="styled-divider">', unsafe_allow_html=True)
 
     event_options = df["Event"].tolist()
@@ -222,10 +240,11 @@ with st.form("debt_form"):
         key="event_select"
     )
 
+    # Extract data only after selection
     row = df[df["Event"] == selected_event].iloc[0]
-    years_ago = int(row["Years Ago"]) if pd.notna(row.get("Years Ago")) else 0
-    date_val = int(row["Date"]) if pd.notna(row.get("Date")) else "Unknown"
-    actual_daily = float(row.get("Daily Cost", 0)) or 0
+    years_ago = int(row.get("Years Ago", 0)) if pd.notna(row.get("Years Ago")) else 0
+    date_val = int(row.get("Date", 0)) if pd.notna(row.get("Date")) else "Unknown"
+    actual_daily = float(row.get("Daily Cost", 0)) if pd.notna(row.get("Daily Cost")) else 0
 
     st.markdown(f"""
     <div class="event-card">
@@ -254,7 +273,7 @@ with st.form("debt_form"):
     calculate = st.form_submit_button("REVEAL THE TRUTH 🔍", type="primary")
 
 # ─────────────────────────────────────────────
-#  RESULTS (split into separate markdowns = guaranteed rendering)
+#  RESULTS
 # ─────────────────────────────────────────────
 if calculate and guess > 0:
     guess_total = guess * years_ago * 365
@@ -284,7 +303,6 @@ if calculate and guess > 0:
         verdict_headline = "Way Over The Top"
         verdict_body = f"That's <strong>{ratio:.0f}x</strong> the required daily figure."
 
-    # Split results into separate safe markdown blocks
     st.markdown('<div class="result-panel"><div class="result-title">THE BREAKDOWN</div>', unsafe_allow_html=True)
 
     st.markdown(f"""
