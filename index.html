@@ -186,7 +186,7 @@
 
   .field-hint {
     font-family: 'DM Mono', monospace;
-    font-size: 1rem;
+    font-size: 0.8rem;
     color: #3A3730;
     letter-spacing: 0.08em;
     margin-top: 0.4rem;
@@ -476,26 +476,33 @@ function fmtFull(n) {
 let US_DEBT = FALLBACK_DEBT;
 
 async function fetchDebt() {
+  document.getElementById("debtDisplay").innerHTML = '<span class="loading-pulse">Fetching…</span>';
+  document.getElementById("debtSource").textContent = "";
+
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("Request timed out after 10s")), 10000)
+  );
+
   try {
-    const res = await fetch(
-      "https://api.fiscaldata.treasury.gov/services/api/v1/accounting/od/debt_to_penny?sort=-record_date&limit=1",
-      { signal: AbortSignal.timeout(8000) }
-    );
+    const res = await Promise.race([
+      fetch("https://api.fiscaldata.treasury.gov/services/api/v1/accounting/od/debt_to_penny?fields=tot_pub_debt_out_amt,record_date&sort=-record_date&limit=1"),
+      timeout
+    ]);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
-    const raw = json?.data?.[0]?.tot_pub_debt_out_amt;
+    const raw  = json?.data?.[0]?.tot_pub_debt_out_amt;
     const date = json?.data?.[0]?.record_date;
-    if (!raw) throw new Error("No data in response");
+    if (!raw) throw new Error("Unexpected response: " + JSON.stringify(json).slice(0,120));
     US_DEBT = parseFloat(raw);
     document.getElementById("debtDisplay").textContent = fmtFull(US_DEBT);
-    if (date) {
-      document.getElementById("debtSource").textContent = `US Treasury · as of ${date}`;
-    }
+    document.getElementById("debtSource").textContent  = date ? `US Treasury · as of ${date}` : "US Treasury";
   } catch (e) {
-    console.warn("Treasury API failed, using fallback:", e.message);
+    console.error("Treasury API error:", e.message);
     US_DEBT = FALLBACK_DEBT;
-    document.getElementById("debtDisplay").textContent = fmtFull(US_DEBT);
-    document.getElementById("debtSource").textContent = "Estimated · Treasury API unavailable";
+    document.getElementById("debtDisplay").textContent = fmtFull(US_DEBT) + "*";
+    document.getElementById("debtSource").innerHTML =
+      '<span style="color:#EAB308">Live fetch failed — showing estimate</span>&nbsp;' +
+      '<span id="retryBtn" style="cursor:pointer;text-decoration:underline;color:#EAB308" onclick="fetchDebt()">Retry</span>';
   }
 }
 
