@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>US Debt Challenge 💸</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: 'DM Sans', sans-serif;
+    color: #F0EDE6;
+    background: #0A0A0F;
+    min-height: 100vh;
+  }
+
+  body {
+    background-color: #0A0A0F;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(220,38,38,0.15) 0%, transparent 70%),
+      repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.015) 60px, rgba(255,255,255,0.015) 61px),
+      repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.015) 60px, rgba(255,255,255,0.015) 61px);
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 2.5rem 1rem 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: #DC2626;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 10vw, 5.5rem);
+    line-height: 0.95;
+    color: #F0EDE6;
+    letter-spacing: 0.02em;
+    margin: 0 0 0.5rem;
+  }
+  .hero-title span { color: #DC2626; }
+  .hero-subtitle {
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    color: #8A8580;
+    font-weight: 300;
+    max-width: 480px;
+    margin: 20px auto 0;
+    line-height: 1.6;
+  }
+
+  /* ── Debt Ticker ── */
+  .debt-ticker {
+    background: linear-gradient(135deg, #1A0A0A 0%, #150505 100%);
+    border: 1px solid rgba(220,38,38,0.3);
+    border-radius: 12px;
+    padding: 1.25rem 1.75rem;
+    margin: 1.5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .ticker-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: #DC2626;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+  .ticker-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: #FF4444;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 30px rgba(220,38,38,0.4);
+  }
+  .ticker-source {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    color: #3A3730;
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+  }
+  .ticker-emoji { font-size: 2.5rem; opacity: 0.2; }
+
+  /* ── Divider ── */
+  .styled-divider {
+    border: none;
+    border-top: 1px solid rgba(240,237,230,0.06);
+    margin: 1.5rem 0;
+  }
+
+  /* ── Event Card ── */
+  .event-card {
+    background: linear-gradient(135deg, #111118 0%, #0D0D14 100%);
+    border: 1px solid rgba(240,237,230,0.08);
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin: 1rem 0;
+  }
+  .event-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: #5A5750;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .event-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    color: #F0EDE6;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    margin-bottom: 0.75rem;
+  }
+  .event-meta { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .meta-chip {
+    background: rgba(240,237,230,0.05);
+    border: 1px solid rgba(240,237,230,0.08);
+    border-radius: 6px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.8rem;
+    color: #8A8580;
+    font-family: 'DM Mono', monospace;
+  }
+  .meta-chip strong { color: #C8C4BC; }
+
+  /* ── Form Controls ── */
+  .field-label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: #5A5750;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  select, input[type="number"] {
+    width: 100%;
+    background: #111118;
+    border: 1px solid rgba(240,237,230,0.1);
+    border-radius: 10px;
+    color: #F0EDE6;
+    font-family: 'DM Mono', monospace;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  select:focus, input[type="number"]:focus {
+    outline: none;
+    border-color: rgba(220,38,38,0.5);
+  }
+  select {
+    font-size: 0.95rem;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235A5750' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+  }
+  input[type="number"] {
+    font-size: 1.1rem;
+    padding: 0.6rem 1rem;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { opacity: 1; filter: invert(0.8); }
+
+  .field-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    color: #3A3730;
+    letter-spacing: 0.08em;
+    margin-top: 0.4rem;
+  }
+
+  /* ── Button ── */
+  .reveal-btn {
+    width: 100%;
+    margin-top: 1.5rem;
+    background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+    color: #F0EDE6;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.1em;
+    border: none;
+    border-radius: 10px;
+    padding: 0.85rem 2.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 24px rgba(220,38,38,0.25);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .reveal-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 32px rgba(220,38,38,0.4);
+  }
+  .reveal-btn:active { transform: translateY(0); }
+  .reveal-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ── Warning ── */
+  .warning-box {
+    background: rgba(234,179,8,0.08);
+    border: 1px solid rgba(234,179,8,0.25);
+    border-radius: 10px;
+    padding: 0.9rem 1.25rem;
+    margin-top: 1rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: #EAB308;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── Result Panel ── */
+  .result-panel {
+    background: linear-gradient(135deg, #0D1117 0%, #0A0F1A 100%);
+    border: 1px solid rgba(240,237,230,0.08);
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin-top: 1.5rem;
+    animation: fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .result-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: #8A8580;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+  }
+
+  /* ── Bars ── */
+  .bar-row { margin-bottom: 1.1rem; }
+  .bar-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.35rem;
+  }
+  .bar-name {
+    font-size: 0.8rem;
+    font-family: 'DM Mono', monospace;
+    color: #8A8580;
+    letter-spacing: 0.05em;
+  }
+  .bar-amount {
+    font-size: 0.85rem;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+  .bar-track {
+    background: rgba(240,237,230,0.05);
+    border-radius: 4px;
+    height: 28px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+    min-width: 4px;
+  }
+  .bar-fill-guess {
+    background: linear-gradient(90deg, #2563EB, #3B82F6);
+    box-shadow: 0 0 20px rgba(59,130,246,0.3);
+  }
+  .bar-fill-debt {
+    background: linear-gradient(90deg, #DC2626, #EF4444);
+    box-shadow: 0 0 20px rgba(220,38,38,0.3);
+  }
+
+  /* ── Stat Pills ── */
+  .stat-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    flex: 1;
+    min-width: 140px;
+    background: rgba(240,237,230,0.04);
+    border: 1px solid rgba(240,237,230,0.07);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    text-align: center;
+  }
+  .stat-pill-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: #5A5750;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+  .stat-pill-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Verdict ── */
+  .verdict {
+    margin-top: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
+    border-left: 4px solid;
+  }
+  .verdict-low  { background: rgba(220,38,38,0.06);  border-color: #DC2626; }
+  .verdict-close{ background: rgba(34,197,94,0.06);  border-color: #22C55E; }
+  .verdict-high { background: rgba(234,179,8,0.06);  border-color: #EAB308; }
+  .verdict-emoji    { font-size: 1.75rem; margin-bottom: 0.4rem; }
+  .verdict-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+  }
+  .verdict-body { font-size: 0.875rem; color: #8A8580; line-height: 1.6; }
+  .verdict-body strong { color: #C8C4BC; }
+
+  .reset-hint {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #3A3730;
+    font-family: 'DM Mono', monospace;
+    margin-top: 1rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Error / Loading states ── */
+  .error-box {
+    background: rgba(220,38,38,0.08);
+    border: 1px solid rgba(220,38,38,0.25);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: #EF4444;
+    line-height: 1.6;
+  }
+  .loading-pulse {
+    color: #3A3730;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+  /* ── Responsive ── */
+  @media (max-width: 480px) {
+    .debt-ticker { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .ticker-emoji { display: none; }
+    .stat-pill { min-width: 120px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-eyebrow">Interactive Challenge</div>
+    <h1 class="hero-title">SCALE OF THE<br><span>USA NATIONAL DEBT</span></h1>
+    <p class="hero-subtitle">
+      Pick a moment in history. Guess how many dollars per day would be needed since that date to equal today's national debt. See how your total stacks up.
+    </p>
+  </div>
+
+  <!-- Debt Ticker -->
+  <div class="debt-ticker">
+    <div>
+      <div class="ticker-label">Current US National Debt</div>
+      <div class="ticker-value" id="debtDisplay"><span class="loading-pulse">Loading…</span></div>
+      <div class="ticker-source" id="debtSource"></div>
+    </div>
+    <div class="ticker-emoji">💸</div>
+  </div>
+
+  <hr class="styled-divider">
+
+  <!-- Event Selector -->
+  <div id="appSection" style="display:none">
+    <label class="field-label" for="eventSelect">Choose a Historical Event</label>
+    <select id="eventSelect"></select>
+
+    <div class="event-card" id="eventCard" style="margin-top:1rem">
+      <div class="event-label">Selected Event</div>
+      <div class="event-name" id="cardEventName">—</div>
+      <div class="event-meta" id="cardMeta"></div>
+    </div>
+
+    <hr class="styled-divider">
+
+    <label class="field-label" for="guessInput">Your Guess — Daily Dollars Needed to Equal Debt ($)</label>
+    <input type="number" id="guessInput" min="0" value="0" step="1000000" placeholder="0">
+    <div class="field-hint">Enter what you think the daily amount would need to be since that event to equal today's debt</div>
+
+    <button class="reveal-btn" id="revealBtn">REVEAL THE TRUTH 🔍</button>
+
+    <div id="warningBox" class="warning-box" style="display:none">⚠️ Please enter a guess greater than $0.</div>
+    <div id="resultPanel"></div>
+    <div class="reset-hint" id="resetHint" style="display:none">↑ Change the event or your guess above to play again</div>
+  </div>
+
+  <div id="loadingMsg" class="loading-pulse" style="text-align:center; padding:2rem 0">Loading events…</div>
+  <div id="errorMsg" class="error-box" style="display:none"></div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  CONFIG
+// ─────────────────────────────────────────────
+const FALLBACK_DEBT = 39_200_000_000_000; // used only if Treasury API fails
+
+const EVENTS = [
+  { event: "Birth of Abraham",               date: "1955 BC", yearsPast: 3981, dailyCost: 26839818  },
+  { event: "Birth of King David",            date: "1041 BC", yearsPast: 3067, dailyCost: 34838381  },
+  { event: "Birth of Christ",                date: "0",       yearsPast: 2026, dailyCost: 52739050  },
+  { event: "Fall of Rome",                   date: "476",     yearsPast: 1550, dailyCost: 68935042  },
+  { event: "Battle of Tours",                date: "732",     yearsPast: 1294, dailyCost: 82572886  },
+  { event: "Protestant Reformation",         date: "1517",    yearsPast: 509,  dailyCost: 209920069 },
+  { event: "Declaration of Independence",    date: "1776",    yearsPast: 250,  dailyCost: 427397260 },
+  { event: "Founding of the Federal Reserve",date: "1913",    yearsPast: 113,  dailyCost: 945569160 },
+  { event: "Moon Landing",                   date: "1969",    yearsPast: 57,   dailyCost: 1874549387},
+];
+
+// ─────────────────────────────────────────────
+//  FORMATTERS
+// ─────────────────────────────────────────────
+function fmtDollars(n) {
+  if (!n || n <= 0) return "$0";
+  if (n >= 1e12) return `$${(n/1e12).toFixed(2)}T`;
+  if (n >= 1e9)  return `$${(n/1e9).toFixed(2)}B`;
+  if (n >= 1e6)  return `$${(n/1e6).toFixed(2)}M`;
+  return `$${n.toLocaleString('en-US', {maximumFractionDigits:0})}`;
+}
+
+function fmtFull(n) {
+  if (!n) return "$0";
+  return "$" + Math.round(n).toLocaleString('en-US');
+}
+
+// ─────────────────────────────────────────────
+//  TREASURY API — live debt figure
+// ─────────────────────────────────────────────
+let US_DEBT = FALLBACK_DEBT;
+
+async function fetchDebt() {
+  try {
+    const res = await fetch(
+      "https://api.fiscaldata.treasury.gov/services/api/v1/accounting/od/debt_to_penny?sort=-record_date&limit=1",
+      { signal: AbortSignal.timeout(8000) }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    const raw = json?.data?.[0]?.tot_pub_debt_out_amt;
+    const date = json?.data?.[0]?.record_date;
+    if (!raw) throw new Error("No data in response");
+    US_DEBT = parseFloat(raw);
+    document.getElementById("debtDisplay").textContent = fmtFull(US_DEBT);
+    if (date) {
+      document.getElementById("debtSource").textContent = `US Treasury · as of ${date}`;
+    }
+  } catch (e) {
+    console.warn("Treasury API failed, using fallback:", e.message);
+    US_DEBT = FALLBACK_DEBT;
+    document.getElementById("debtDisplay").textContent = fmtFull(US_DEBT);
+    document.getElementById("debtSource").textContent = "Estimated · Treasury API unavailable";
+  }
+}
+
+// ─────────────────────────────────────────────
+//  UI
+// ─────────────────────────────────────────────
+let events = [];
+
+function populateSelect(data) {
+  const sel = document.getElementById("eventSelect");
+  sel.innerHTML = "";
+  data.forEach((row, i) => {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = row.event;
+    sel.appendChild(opt);
+  });
+  updateEventCard(0);
+}
+
+function updateEventCard(idx) {
+  const row = events[idx];
+  if (!row) return;
+  document.getElementById("cardEventName").textContent = row.event;
+  const days = row.yearsPast * 365;
+  document.getElementById("cardMeta").innerHTML = `
+    <div class="meta-chip">📅 Year <strong>${row.date || "Unknown"}</strong></div>
+    <div class="meta-chip">⏳ <strong>${row.yearsPast.toLocaleString()}</strong> years ago</div>
+    <div class="meta-chip">📐 <strong>${days.toLocaleString()}</strong> days of spending</div>
+  `;
+}
+
+function showResult(guess, row) {
+  const guessTotal = guess * row.yearsPast * 365;
+  const maxVal = Math.max(guessTotal, US_DEBT, 1);
+  const guessPct = Math.min((guessTotal / maxVal) * 100, 100);
+  const debtPct  = Math.min((US_DEBT    / maxVal) * 100, 100);
+  const actual   = row.dailyCost;
+  const ratio    = actual > 0 ? guess / actual : 0;
+
+  let verdictClass, verdictEmoji, verdictHeadline, verdictBody;
+
+  if (ratio < 0.1) {
+    verdictClass = "verdict-low"; verdictEmoji = "😱";
+    verdictHeadline = "Way Under — Reality Is Staggering";
+    verdictBody = `Your guess of <strong>${fmtDollars(guess)}/day</strong> is less than 10% of the amount needed. The break-even daily amount is <strong>${fmtDollars(actual)}/day</strong>.`;
+  } else if (ratio < 0.5) {
+    verdictClass = "verdict-low"; verdictEmoji = "📉";
+    verdictHeadline = "Under By A Wide Margin";
+    verdictBody = `The required daily amount of <strong>${fmtDollars(actual)}/day</strong> is roughly <strong>${(1/ratio).toFixed(1)}x</strong> higher than your guess.`;
+  } else if (ratio <= 2.0) {
+    verdictClass = "verdict-close"; verdictEmoji = "🎯";
+    verdictHeadline = "Remarkably Close!";
+    verdictBody = `You guessed <strong>${fmtDollars(guess)}/day</strong> vs the required <strong>${fmtDollars(actual)}/day</strong>.`;
+  } else if (ratio <= 10) {
+    verdictClass = "verdict-high"; verdictEmoji = "📈";
+    verdictHeadline = "You Overshot";
+    verdictBody = `Your guess was about <strong>${ratio.toFixed(1)}x</strong> higher than required.`;
+  } else {
+    verdictClass = "verdict-high"; verdictEmoji = "🚀";
+    verdictHeadline = "Way Over The Top";
+    verdictBody = `That's <strong>${Math.round(ratio).toLocaleString()}x</strong> the required daily figure.`;
+  }
+
+  const debtVsGuess = (US_DEBT / Math.max(guessTotal, 1)).toFixed(1);
+
+  document.getElementById("resultPanel").innerHTML = `
+    <div class="result-panel">
+      <div class="result-title">The Breakdown</div>
+
+      <div class="bar-row">
+        <div class="bar-meta">
+          <span class="bar-name">🔵 YOUR GUESS TOTAL</span>
+          <span class="bar-amount" style="color:#3B82F6">${fmtFull(guessTotal)}</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-guess" style="width:0%" data-target="${guessPct.toFixed(1)}"></div>
+        </div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-meta">
+          <span class="bar-name">🔴 US NATIONAL DEBT</span>
+          <span class="bar-amount" style="color:#EF4444">${fmtFull(US_DEBT)}</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-debt" style="width:0%" data-target="${debtPct.toFixed(1)}"></div>
+        </div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-pill">
+          <div class="stat-pill-label">Your Daily Guess</div>
+          <div class="stat-pill-value" style="color:#3B82F6">${fmtDollars(guess)}</div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-pill-label">Break-Even Daily</div>
+          <div class="stat-pill-value" style="color:#EF4444">${fmtDollars(actual)}</div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-pill-label">Your Total</div>
+          <div class="stat-pill-value" style="color:#3B82F6">${fmtDollars(guessTotal)}</div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-pill-label">Debt vs Your Total</div>
+          <div class="stat-pill-value" style="color:#8A8580">${debtVsGuess}x</div>
+        </div>
+      </div>
+
+      <div class="verdict ${verdictClass}">
+        <div class="verdict-emoji">${verdictEmoji}</div>
+        <div class="verdict-headline">${verdictHeadline}</div>
+        <div class="verdict-body">${verdictBody}</div>
+      </div>
+    </div>
+  `;
+
+  // Animate bars after paint
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.querySelectorAll(".bar-fill[data-target]").forEach(el => {
+        el.style.width = el.dataset.target + "%";
+      });
+    });
+  });
+
+  document.getElementById("resetHint").style.display = "block";
+}
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+async function init() {
+  const loadingMsg = document.getElementById("loadingMsg");
+  const appSection = document.getElementById("appSection");
+
+  // Fetch live debt (non-blocking — UI shows immediately)
+  fetchDebt();
+
+  events = EVENTS;
+  loadingMsg.style.display = "none";
+  appSection.style.display = "block";
+  populateSelect(events);
+
+  // Event select change
+  document.getElementById("eventSelect").addEventListener("change", e => {
+    updateEventCard(parseInt(e.target.value));
+    document.getElementById("resultPanel").innerHTML = "";
+    document.getElementById("resetHint").style.display = "none";
+    document.getElementById("warningBox").style.display = "none";
+  });
+
+  // Reveal button
+  document.getElementById("revealBtn").addEventListener("click", () => {
+    const guess = parseFloat(document.getElementById("guessInput").value) || 0;
+    const idx   = parseInt(document.getElementById("eventSelect").value);
+    const row   = events[idx];
+
+    document.getElementById("warningBox").style.display = "none";
+
+    if (guess <= 0) {
+      document.getElementById("warningBox").style.display = "block";
+      return;
+    }
+
+    showResult(guess, row);
+  });
+
+  // Clear result when guess changes
+  document.getElementById("guessInput").addEventListener("input", () => {
+    document.getElementById("resultPanel").innerHTML = "";
+    document.getElementById("resetHint").style.display = "none";
+  });
+}
+
+init();
+</script>
+</body>
+</html>
