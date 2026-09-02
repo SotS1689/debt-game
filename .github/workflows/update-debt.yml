@@ -23,7 +23,7 @@ jobs:
           set -euo pipefail
 
           RESPONSE=$(curl -sS --fail \
-            "https://api.fiscaldata.treasury.gov/services/api/v1/accounting/od/debt_to_penny?fields=tot_pub_debt_out_amt,record_date&sort=-record_date&limit=1")
+            "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny?fields=record_date,tot_pub_debt_out_amt&sort=-record_date&page[size]=1")
 
           AMOUNT=$(echo "$RESPONSE" | jq -r '.data[0].tot_pub_debt_out_amt // empty')
           DATE=$(echo "$RESPONSE" | jq -r '.data[0].record_date // empty')
