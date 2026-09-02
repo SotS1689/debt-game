@@ -1,0 +1,59 @@
+name: Update Treasury Debt Data
+
+on:
+  schedule:
+    # Treasury's Debt to the Penny dataset updates once per business day
+    # (evening, after markets close). 11:00 UTC covers both the initial
+    # publish and gives a buffer for any late updates.
+    - cron: '0 11 * * *'
+  workflow_dispatch: {}   # lets you trigger it manually from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  update-debt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Fetch latest debt figure from Treasury
+        run: |
+          set -euo pipefail
+
+          RESPONSE=$(curl -sS --fail \
+            "https://api.fiscaldata.treasury.gov/services/api/v1/accounting/od/debt_to_penny?fields=tot_pub_debt_out_amt,record_date&sort=-record_date&limit=1")
+
+          AMOUNT=$(echo "$RESPONSE" | jq -r '.data[0].tot_pub_debt_out_amt // empty')
+          DATE=$(echo "$RESPONSE" | jq -r '.data[0].record_date // empty')
+
+          if [ -z "$AMOUNT" ]; then
+            echo "Treasury API returned unexpected data:"
+            echo "$RESPONSE"
+            exit 1
+          fi
+
+          UPDATED=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          jq -n \
+            --arg amount "$AMOUNT" \
+            --arg date "$DATE" \
+            --arg updated "$UPDATED" \
+            '{amount: $amount, date: $date, updated: $updated}' > debt.json
+
+          echo "Wrote debt.json:"
+          cat debt.json
+
+      - name: Commit debt.json if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet -- debt.json; then
+            echo "No change in debt figure — nothing to commit."
+          else
+            git add debt.json
+            git commit -m "chore: update Treasury debt figure [skip ci]"
+            git push
+          fi
