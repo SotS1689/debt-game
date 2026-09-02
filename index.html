@@ -476,21 +476,52 @@ function fmtFull(n) {
 // ─────────────────────────────────────────────
 let US_DEBT = FALLBACK_DEBT;
 
+const TREASURY_URL = "https://api.fiscaldata.treasury.gov/services/api/v1/accounting/od/debt_to_penny?fields=tot_pub_debt_out_amt,record_date&sort=-record_date&limit=1";
+
+// api.fiscaldata.treasury.gov doesn't send Access-Control-Allow-Origin, so
+// browsers block a direct cross-origin fetch from a github.io page. We try
+// the direct request first (in case that ever changes), then fall back to
+// a couple of public CORS proxies before giving up and using the estimate.
+function withTimeout(promise, ms, label) {
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+  );
+  return Promise.race([promise, timeout]);
+}
+
+async function fetchJsonViaProxies(url) {
+  const attempts = [
+    // 1. Direct request (works if Treasury ever adds CORS headers, or if
+    //    the page is loaded from an environment without CORS enforcement).
+    { url, parse: (r) => r.json() },
+    // 2. allorigins — wraps the target response as JSON with the body as text.
+    { url: `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, parse: (r) => r.json() },
+    // 3. corsproxy.io — simple passthrough proxy.
+    { url: `https://corsproxy.io/?url=${encodeURIComponent(url)}`, parse: (r) => r.json() },
+    // 4. r.jina.ai proxy — returns the raw response body untouched.
+    { url: `https://r.jina.ai/${url}`, parse: (r) => r.json() },
+  ];
+
+  let lastError;
+  for (const attempt of attempts) {
+    try {
+      const res = await withTimeout(fetch(attempt.url), 8000, "Request");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await attempt.parse(res);
+    } catch (e) {
+      lastError = e;
+      console.warn(`Treasury fetch attempt failed (${attempt.url}):`, e.message);
+    }
+  }
+  throw lastError || new Error("All fetch attempts failed");
+}
+
 async function fetchDebt() {
   document.getElementById("debtDisplay").innerHTML = '<span class="loading-pulse">Fetching…</span>';
   document.getElementById("debtSource").textContent = "";
 
-  const timeout = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error("Request timed out after 10s")), 10000)
-  );
-
   try {
-    const res = await Promise.race([
-      fetch("https://api.fiscaldata.treasury.gov/services/api/v1/accounting/od/debt_to_penny?fields=tot_pub_debt_out_amt,record_date&sort=-record_date&limit=1"),
-      timeout
-    ]);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
+    const json = await fetchJsonViaProxies(TREASURY_URL);
     const raw  = json?.data?.[0]?.tot_pub_debt_out_amt;
     const date = json?.data?.[0]?.record_date;
     if (!raw) throw new Error("Unexpected response: " + JSON.stringify(json).slice(0,120));
