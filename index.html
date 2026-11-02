@@ -298,20 +298,6 @@
     margin-top: 0.75rem;
   }
   .circle-caption strong { color: #C8C4BC; }
-  .layout-toggle { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; }
-  .layout-toggle button {
-    background: rgba(240,237,230,0.05);
-    border: 1px solid rgba(240,237,230,0.1);
-    border-radius: 6px;
-    color: #8A8580;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 0.35rem 0.75rem;
-    cursor: pointer;
-  }
-  .layout-toggle button.active { color: #F0EDE6; border-color: rgba(220,38,38,0.5); }
 
   /* ── Stat Pills ── */
   .stat-row {
@@ -566,43 +552,27 @@ function updateEventCard(idx) {
 //  CIRCLES — area is proportional to the dollar value,
 //  so radius = R_MAX * sqrt(value / largest value)
 // ─────────────────────────────────────────────
-let circleLayout = "nested"; // "nested" | "side"
-let lastCircle = null;
-
 function fmtPct(p) {
   return p.toLocaleString('en-US', { maximumSignificantDigits: p >= 1 ? 3 : 2 }) + "%";
 }
 
-function buildCircles(guessTotal, debt, layout) {
-  const W = 320, PAD = 14, MIN_VISIBLE = 0.75;
+function buildCircles(guessTotal, debt) {
+  const W = 320, PAD = 14, GAP = 16, MIN_VISIBLE = 0.75;
   const big = Math.max(guessTotal, debt, 1);
   const k = Math.sqrt(Math.min(guessTotal, debt) / big); // small radius / big radius
 
-  let R, H, guessC, debtC;
-  if (layout === "side") {
-    const GAP = 16;
-    R = Math.min(120, (W - 2 * PAD - GAP) / (2 * (1 + k)));
-    const rG = R * Math.sqrt(guessTotal / big), rD = R * Math.sqrt(debt / big);
-    H = 2 * R + 2 * PAD;
-    const left = (W - (2 * rG + GAP + 2 * rD)) / 2;
-    const base = H - PAD;
-    guessC = { r: rG, cx: left + rG,                 cy: base - rG };
-    debtC  = { r: rD, cx: left + 2 * rG + GAP + rD,  cy: base - rD };
-  } else {
-    R = (W - 2 * PAD) / 2;
-    const rG = R * Math.sqrt(guessTotal / big), rD = R * Math.sqrt(debt / big);
-    H = 2 * R + 2 * PAD;
-    const base = H - PAD; // both circles sit on the same bottom point
-    guessC = { r: rG, cx: W / 2, cy: base - rG };
-    debtC  = { r: rD, cx: W / 2, cy: base - rD };
-  }
+  // Guess on the left, debt on the right, both sitting on the same baseline.
+  const R = Math.min(120, (W - 2 * PAD - GAP) / (2 * (1 + k)));
+  const rG = R * Math.sqrt(guessTotal / big), rD = R * Math.sqrt(debt / big);
+  const H = 2 * R + 2 * PAD;
+  const left = (W - (2 * rG + GAP + 2 * rD)) / 2;
+  const base = H - PAD;
+  const guessC = { r: rG, cx: left + rG,                cy: base - rG };
+  const debtC  = { r: rD, cx: left + 2 * rG + GAP + rD, cy: base - rD };
 
   const circle = (c, cls) =>
     `<circle class="circle-grow ${cls}" cx="${c.cx.toFixed(2)}" cy="${c.cy.toFixed(2)}" r="${Math.max(c.r, MIN_VISIBLE).toFixed(3)}"/>`;
-  // Draw the larger circle first so the smaller one stays visible on top.
-  const shapes = guessTotal >= debt
-    ? circle(guessC, "circle-guess") + circle(debtC, "circle-debt")
-    : circle(debtC, "circle-debt") + circle(guessC, "circle-guess");
+  const shapes = circle(guessC, "circle-guess") + circle(debtC, "circle-debt");
 
   // A guess too small to see gets a dashed ring around where it is.
   const tiny = guessC.r < 4;
@@ -629,22 +599,6 @@ function buildCircles(guessTotal, debt, layout) {
     caption = `The debt fills <strong>${fmtPct(debt / guessTotal * 100)}</strong> of your guess circle.`;
   }
   return svg + `<div class="circle-caption">${caption}</div>`;
-}
-
-function renderCircles() {
-  if (!lastCircle) return;
-  document.getElementById("circleWrap").innerHTML =
-    buildCircles(lastCircle.guessTotal, lastCircle.debt, circleLayout);
-  document.querySelectorAll(".layout-toggle button").forEach(b =>
-    b.classList.toggle("active", b.dataset.layout === circleLayout));
-  // Grow the circles after paint
-  requestAnimationFrame(() => requestAnimationFrame(() =>
-    document.querySelectorAll(".circle-grow").forEach(el => el.classList.add("grown"))));
-}
-
-function setCircleLayout(layout) {
-  circleLayout = layout;
-  renderCircles();
 }
 
 function showResult(guess, row) {
@@ -682,11 +636,6 @@ function showResult(guess, row) {
     <div class="result-panel">
       <div class="result-title">The Breakdown</div>
 
-      <div class="layout-toggle">
-        <button type="button" data-layout="nested" onclick="setCircleLayout('nested')">Inside</button>
-        <button type="button" data-layout="side" onclick="setCircleLayout('side')">Side by side</button>
-      </div>
-
       <div class="circle-legend">
         <div class="legend-row">
           <span class="legend-name">🔵 YOUR GUESS TOTAL</span>
@@ -698,7 +647,7 @@ function showResult(guess, row) {
         </div>
       </div>
 
-      <div id="circleWrap"></div>
+      ${buildCircles(guessTotal, US_DEBT)}
 
       <div class="stat-row">
         <div class="stat-pill">
@@ -727,8 +676,11 @@ function showResult(guess, row) {
     </div>
   `;
 
-  lastCircle = { guessTotal, debt: US_DEBT };
-  renderCircles();
+  // Grow the circles: reading layout first commits the scale(0) start state,
+  // so the transition runs without waiting on an animation frame.
+  const circles = document.querySelectorAll(".circle-grow");
+  circles.forEach(el => el.getBoundingClientRect());
+  circles.forEach(el => el.classList.add("grown"));
 
   document.getElementById("resetHint").style.display = "block";
 }
